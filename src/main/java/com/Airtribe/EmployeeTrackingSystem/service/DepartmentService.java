@@ -2,16 +2,20 @@ package com.Airtribe.EmployeeTrackingSystem.service;
 
 import com.Airtribe.EmployeeTrackingSystem.entity.Department;
 import com.Airtribe.EmployeeTrackingSystem.entity.Project;
+import com.Airtribe.EmployeeTrackingSystem.exception.DataAlreadyExistException;
+import com.Airtribe.EmployeeTrackingSystem.exception.ResourceNotFoundException;
 import com.Airtribe.EmployeeTrackingSystem.repository.DepartmentRepo;
 import com.Airtribe.EmployeeTrackingSystem.repository.ProjectsRepo;
+import com.Airtribe.EmployeeTrackingSystem.serviceInterface.IDepartmentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
-public class DepartmentService {
+public class DepartmentService implements IDepartmentService {
 
     @Autowired
     private DepartmentRepo departmentRepo;
@@ -19,30 +23,63 @@ public class DepartmentService {
     @Autowired
     private ProjectsRepo projectsRepo;
 
-    public Department addDepartment(Department department) {
-//        if(departmentRepo.existsById(department.getDepartmentId()))
-//            return null;
-//        else
-            return departmentRepo.save(department);
-    }
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
-    public Department updateDepartment(Long departmentId, Department department) {
-        if(departmentRepo.existsById(departmentId))
-            return null;
+    private static final String DEPARTMENT_CACHE_KEY = "DEPARTMENT";
+
+    @Override
+    public Department addDepartment(Department department) throws DataAlreadyExistException {
+        Department dep = getDepartmentById(department.getDepartmentId());
+        if(dep != null)
+        {
+            throw new DataAlreadyExistException("Department already exists with id"+ department.getDepartmentId());
+        }
         else
-            return departmentRepo.save(department);
-    }
-
-    public String deleteDepartment(long departmentId) {
-        if(!departmentRepo.existsById(departmentId))
-            return "Department not found";
-        else {
-            departmentRepo.deleteById(departmentId);
-            return "Department deleted";
+        {
+            departmentRepo.save(department);
+            redisTemplate.opsForHash().put(DEPARTMENT_CACHE_KEY, department.getDepartmentId(), department);
+            return department;
         }
     }
 
+    @Override
+    public Department updateDepartment(Long departmentId, Department updatedDepartment) throws ResourceNotFoundException {
+        if(!departmentRepo.existsById(departmentId))
+            throw new ResourceNotFoundException("Department not found with id"+ departmentId);
+        else
+        {
+            Department department = departmentRepo.findById(departmentId).orElse(null);
+            if(department != null) {
+                department.setDepartmentName(updatedDepartment.getDepartmentName());
+                department.setDepartmentDescription(updatedDepartment.getDepartmentDescription());
+                department.setEmployees(updatedDepartment.getEmployees());
+                department.setProjects(updatedDepartment.getProjects());
+                departmentRepo.save(department);
+                redisTemplate.opsForHash().delete(DEPARTMENT_CACHE_KEY, departmentId);
+                redisTemplate.opsForHash().put(DEPARTMENT_CACHE_KEY, departmentId, department);
+                return department;
+            }
+            throw new ResourceNotFoundException("Department not found with id"+ departmentId);
+        }
+    }
+
+    @Override
+    public String deleteDepartment(long departmentId) throws ResourceNotFoundException {
+        if(!departmentRepo.existsById(departmentId))
+            throw new ResourceNotFoundException("Department not found with id"+ departmentId);
+        else {
+            departmentRepo.deleteById(departmentId);
+            redisTemplate.opsForHash().delete(DEPARTMENT_CACHE_KEY, departmentId);
+            return "Department deleted with id"+ departmentId;
+        }
+    }
+
+    @Override
     public Department getDepartmentById(long departmentId) {
+        Department department = (Department) redisTemplate.opsForHash().get(DEPARTMENT_CACHE_KEY, departmentId);
+        if(department != null)
+            return department;
         Optional<Department> dep =  departmentRepo.findById(departmentId);
         if(dep.isPresent())
             return dep.get();
@@ -50,28 +87,25 @@ public class DepartmentService {
             return null;
     }
 
-    public Department getDepartmentByName(String departmentName) {
+    @Override
+    public Department getDepartmentByName(String departmentName) throws ResourceNotFoundException {
         Optional<Department> dep =  departmentRepo.findByDepartmentName(departmentName);
         if(dep.isPresent())
             return dep.get();
         else
-            return null;
+            throw new ResourceNotFoundException("Department not found with name"+ departmentName +"Please check the case, spaces and try again");
     }
 
-    public List<Department> getDepartments() {
-       return departmentRepo.findAll();
-    }
+    @Override
+    public List<Department> getDepartments() throws ResourceNotFoundException {
+        List<Object> departments = redisTemplate.opsForHash().values(DEPARTMENT_CACHE_KEY);
+        if(departments != null)
+            return (List<Department>)(List<?>) departments;
 
-//    public Department assignProjectToDepartment(Long departmentId, Long projectId) {
-//        Department dep = departmentRepo.findById(departmentId).orElse(null);
-//        Project project = projectsRepo.findById(projectId).orElse(null);
-//        if(dep != null && project != null) {
-//            dep.getProjects().add(project);
-//            departmentRepo.save(dep);
-////            project.setDepartment(dep);
-////            projectsRepo.save(project);
-//            return dep;
-//        }
-//        return null;
-//    }
+       List<Department> dep = departmentRepo.findAll();
+       if (dep != null)
+           return dep;
+       else
+           throw new ResourceNotFoundException("No departments found");
+    }
 }

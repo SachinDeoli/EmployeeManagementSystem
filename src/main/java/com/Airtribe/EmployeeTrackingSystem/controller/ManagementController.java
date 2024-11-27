@@ -4,6 +4,7 @@ import com.Airtribe.EmployeeTrackingSystem.entity.Employee;
 import com.Airtribe.EmployeeTrackingSystem.entity.Project;
 import com.Airtribe.EmployeeTrackingSystem.service.ManagementService;
 import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,24 +18,28 @@ public class ManagementController {
 
     // Assign project to department
     @PostMapping("/assignProjectToDepartment")
+    //@PreAuthorize("hasRole('ADMIN')")
     public void assignProjectToDepartment(@RequestParam Long projectId, @RequestParam Long departmentId) {
         managementService.assignProjectToDepartment(projectId, departmentId);
     }
 
     // Assign employee to department
     @PostMapping("/assignEmployeeToDepartment")
+    //@PreAuthorize("hasRole('ADMIN')")
     public void assignEmployeeToDepartment(@RequestParam Long employeeId, @RequestParam Long departmentId) {
         managementService.assignEmployeeToDepartment(employeeId, departmentId);
     }
 
     // Assign employee to project
     @PostMapping("/assignEmployeeToProject")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public void assignEmployeeToProject(@RequestParam Long employeeId, @RequestParam Long projectId) {
         managementService.assignEmployeeToProject(employeeId, projectId);
     }
 
     // Get total budget for a department
     @GetMapping("/totalBudgetForDepartment")
+    //@PreAuthorize("hasRole('ADMIN')")
     public Double getTotalBudgetForDepartment(@RequestParam Long departmentId) {
         return managementService.getTotalBudgetForDepartment(departmentId);
     }
