@@ -9,8 +9,11 @@ import java.util.List;
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+
+    @Column(unique = true)
+    private Long employeeId;
     private String employeeName;
     private String employeeEmail;
 
@@ -34,11 +37,11 @@ public class Employee {
     }
 
     public long getEmployeeId() {
-        return id;
+        return employeeId;
     }
 
-    public void setEmployeeId(long id) {
-        this.id = id;
+    public void setEmployeeId(long employeeId) {
+        this.employeeId = employeeId;
     }
 
     public String getEmployeeEmail() {
@@ -68,8 +71,8 @@ public class Employee {
     public Employee() {
     }
 
-    public Employee(long id, String employeeName, String employeeEmail,Department department) {
-        this.id = id;
+    public Employee(long employeeId, String employeeName, String employeeEmail,Department department) {
+        this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.employeeEmail = employeeEmail;
         this.department= department;

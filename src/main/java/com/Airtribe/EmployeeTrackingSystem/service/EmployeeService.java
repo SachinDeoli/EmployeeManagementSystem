@@ -6,6 +6,7 @@ import com.Airtribe.EmployeeTrackingSystem.exception.DataAlreadyExistException;
 import com.Airtribe.EmployeeTrackingSystem.exception.ResourceNotFoundException;
 import com.Airtribe.EmployeeTrackingSystem.repository.EmployeeRepo;
 import com.Airtribe.EmployeeTrackingSystem.serviceInterface.IEmployeeService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -39,16 +40,17 @@ public class EmployeeService implements IEmployeeService {
 
     @Override
     public Employee updateEmployee(Long employeeId, Employee updateEmployee) throws ResourceNotFoundException {
-        if(!employeeRepo.existsById(employeeId))
+        if(!employeeRepo.existsByEmployeeId(employeeId))
             throw new ResourceNotFoundException("Employee not found with id "+ employeeId);
         else
         {
-            Employee dbEmployee = employeeRepo.findById(employeeId).orElse(null);
+            Employee dbEmployee = employeeRepo.findByEmployeeId(employeeId).orElse(null);
             if(dbEmployee != null) {
                 //dbEmployee.setEmployeeId(employeeId);
                 dbEmployee.setEmployeeName(updateEmployee.getEmployeeName());
                 dbEmployee.setDepartment(updateEmployee.getDepartment());
                 dbEmployee.setProject(updateEmployee.getProject());
+                dbEmployee.setEmployeeEmail(updateEmployee.getEmployeeEmail());
                 employeeRepo.save(dbEmployee);
                 redisTemplate.opsForHash().delete(EMPLOYEE_CACHE_KEY, employeeId);
                 redisTemplate.opsForHash().put(EMPLOYEE_CACHE_KEY, employeeId, dbEmployee);
@@ -59,11 +61,12 @@ public class EmployeeService implements IEmployeeService {
     }
 
     @Override
+    @Transactional
     public String deleteEmployee(Long employeeId) throws ResourceNotFoundException {
-        if(!employeeRepo.existsById(employeeId))
+        if(!employeeRepo.existsByEmployeeId(employeeId))
             throw new ResourceNotFoundException("Employee not found with id "+ employeeId);
         else {
-            employeeRepo.deleteById(employeeId);
+            employeeRepo.deleteByEmployeeId(employeeId);
             redisTemplate.opsForHash().delete(EMPLOYEE_CACHE_KEY, employeeId);
             return "Employee deleted";
         }
@@ -75,7 +78,7 @@ public class EmployeeService implements IEmployeeService {
         if(employee != null)
             return employee;
         else
-            return employeeRepo.findById(employeeId).orElse(null);
+            return employeeRepo.findByEmployeeId(employeeId).orElse(null);
     }
 
     @Override
