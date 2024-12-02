@@ -1,6 +1,6 @@
 package com.Airtribe.EmployeeTrackingSystem.service;
 
-import com.Airtribe.EmployeeTrackingSystem.entity.Department;
+
 import com.Airtribe.EmployeeTrackingSystem.entity.Employee;
 import com.Airtribe.EmployeeTrackingSystem.exception.DataAlreadyExistException;
 import com.Airtribe.EmployeeTrackingSystem.exception.ResourceNotFoundException;

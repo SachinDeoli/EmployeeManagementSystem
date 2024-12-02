@@ -1,12 +1,11 @@
 package com.Airtribe.EmployeeTrackingSystem.service;
 
 import com.Airtribe.EmployeeTrackingSystem.entity.Department;
-import com.Airtribe.EmployeeTrackingSystem.entity.Project;
 import com.Airtribe.EmployeeTrackingSystem.exception.DataAlreadyExistException;
 import com.Airtribe.EmployeeTrackingSystem.exception.ResourceNotFoundException;
 import com.Airtribe.EmployeeTrackingSystem.repository.DepartmentRepo;
-import com.Airtribe.EmployeeTrackingSystem.repository.ProjectsRepo;
 import com.Airtribe.EmployeeTrackingSystem.serviceInterface.IDepartmentService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -19,9 +18,6 @@ public class DepartmentService implements IDepartmentService {
 
     @Autowired
     private DepartmentRepo departmentRepo;
-
-    @Autowired
-    private ProjectsRepo projectsRepo;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -45,11 +41,9 @@ public class DepartmentService implements IDepartmentService {
 
     @Override
     public Department updateDepartment(Long departmentId, Department updatedDepartment) throws ResourceNotFoundException {
-        if(!departmentRepo.existsById(departmentId))
-            throw new ResourceNotFoundException("Department not found with id"+ departmentId);
-        else
+        if(departmentRepo.existsByDepartmentId(departmentId))
         {
-            Department department = departmentRepo.findById(departmentId).orElse(null);
+            Department department = departmentRepo.findByDepartmentId(departmentId).orElse(null);
             if(department != null) {
                 department.setDepartmentName(updatedDepartment.getDepartmentName());
                 department.setDepartmentDescription(updatedDepartment.getDepartmentDescription());
@@ -60,16 +54,17 @@ public class DepartmentService implements IDepartmentService {
                 redisTemplate.opsForHash().put(DEPARTMENT_CACHE_KEY, departmentId, department);
                 return department;
             }
-            throw new ResourceNotFoundException("Department not found with id"+ departmentId);
         }
+        throw new ResourceNotFoundException("Department not found with id"+ departmentId);
     }
 
     @Override
+    @Transactional
     public String deleteDepartment(long departmentId) throws ResourceNotFoundException {
-        if(!departmentRepo.existsById(departmentId))
+        if(!departmentRepo.existsByDepartmentId(departmentId))
             throw new ResourceNotFoundException("Department not found with id"+ departmentId);
         else {
-            departmentRepo.deleteById(departmentId);
+            departmentRepo.deleteByDepartmentId(departmentId);
             redisTemplate.opsForHash().delete(DEPARTMENT_CACHE_KEY, departmentId);
             return "Department deleted with id"+ departmentId;
         }
@@ -80,7 +75,7 @@ public class DepartmentService implements IDepartmentService {
         Department department = (Department) redisTemplate.opsForHash().get(DEPARTMENT_CACHE_KEY, departmentId);
         if(department != null)
             return department;
-        Optional<Department> dep =  departmentRepo.findById(departmentId);
+        Optional<Department> dep =  departmentRepo.findByDepartmentId(departmentId);
         if(dep.isPresent())
             return dep.get();
         else
