@@ -8,13 +8,13 @@ import java.util.List;
 @Entity
 public class Project {
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @GeneratedValue(strategy = GenerationType.AUTO)
         private Long id;
+
+        @Column(unique = true)
+        private Long projectId;
         private String projectName;
         private double budget;
-
-//        @OneToMany(mappedBy = "project")
-//        private List<Employee> employee;
 
     @ManyToMany
     @JoinTable(
@@ -30,19 +30,19 @@ public class Project {
         public Project() {
         }
 
-        public Project(Long id, String projectName, double budget, Department department) {
-            this.id = id;
+        public Project(Long projectId, String projectName, double budget, Department department) {
+            this.projectId = projectId;
             this.projectName = projectName;
             this.budget = budget;
             this.department = department;
         }
 
         public Long getProjectId() {
-            return id;
+            return projectId;
         }
 
-        public void setProjectId(Long id) {
-            this.id = id;
+        public void setProjectId(Long projectId) {
+            this.projectId = projectId;
         }
 
         public String getProjectName() {

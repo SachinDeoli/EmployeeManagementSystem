@@ -6,6 +6,7 @@ import com.Airtribe.EmployeeTrackingSystem.exception.ResourceNotFoundException;
 import com.Airtribe.EmployeeTrackingSystem.repository.DepartmentRepo;
 import com.Airtribe.EmployeeTrackingSystem.repository.ProjectsRepo;
 import com.Airtribe.EmployeeTrackingSystem.serviceInterface.IProjectService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -34,19 +35,19 @@ public class ProjectsService implements IProjectService {
             throw new DataAlreadyExistException("Project already exists with id"+ pro.getProjectId());
         }
         else {
-            projectsRepo.save(project);
             redisTemplate.opsForHash().put(PROJECT_CACHE_KEY, project.getProjectId(), project);
+            projectsRepo.save(project);
             return project;
         }
     }
 
     @Override
     public Project updateProject(Long projectId, Project project) throws ResourceNotFoundException {
-        if(!projectsRepo.existsById(projectId))
+        if(!projectsRepo.existsByProjectId(projectId))
             throw new ResourceNotFoundException("Project not found with id"+ projectId);
         else
         {
-            Project dbProject = projectsRepo.findById(projectId).orElse(null);
+            Project dbProject = projectsRepo.findByProjectId(projectId).orElse(null);
             if(dbProject != null) {
                 dbProject.setProjectName(project.getProjectName());
                 dbProject.setBudget(project.getBudget());
@@ -62,11 +63,12 @@ public class ProjectsService implements IProjectService {
     }
 
     @Override
+    @Transactional
     public String deleteProject(Long projectId) throws ResourceNotFoundException {
-        if(!projectsRepo.existsById(projectId))
+        if(!projectsRepo.existsByProjectId(projectId))
             throw new ResourceNotFoundException("Project not found with id"+ projectId);
         else {
-            projectsRepo.deleteById(projectId);
+            projectsRepo.deleteByProjectId(projectId);
             redisTemplate.opsForHash().delete(PROJECT_CACHE_KEY, projectId);
             return "Project deleted";
         }
@@ -78,7 +80,7 @@ public class ProjectsService implements IProjectService {
         if(project != null)
             return project;
         else
-            return projectsRepo.findById(projectId).orElse(null);
+            return projectsRepo.findByProjectId(projectId).orElse(null);
     }
 
     @Override
