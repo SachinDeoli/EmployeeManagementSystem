@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
@@ -17,6 +18,9 @@ public class Employee {
     private Long employeeId;
     private String employeeName;
     private String employeeEmail;
+
+    @Enumerated(EnumType.STRING)
+    private Role role; // e.g., ADMIN, MANAGER, EMPLOYEE
 
     @ManyToOne
     @JoinColumn(name = "department_id", referencedColumnName = "departmentId")  // Foreign key to Department
@@ -71,13 +75,25 @@ public class Employee {
         this.project = project;
     }
 
+    public Role getRole() {
+        return role;
+    }
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Collection<String> getRoles() {
+        return role != null ? List.of(role.name()) : List.of();
+    }
+
     public Employee() {
     }
 
-    public Employee(long employeeId, String employeeName, String employeeEmail,Department department) {
+    public Employee(long employeeId, String employeeName, String employeeEmail,Department department, Role role) {
         this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.employeeEmail = employeeEmail;
         this.department= department;
+        this.role = role;
     }
 }
