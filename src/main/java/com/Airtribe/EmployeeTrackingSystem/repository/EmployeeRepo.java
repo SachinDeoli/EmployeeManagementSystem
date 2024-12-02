@@ -1,5 +1,6 @@
 package com.Airtribe.EmployeeTrackingSystem.repository;
 
+import aj.org.objectweb.asm.commons.Remapper;
 import com.Airtribe.EmployeeTrackingSystem.entity.Employee;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,6 @@ public interface EmployeeRepo extends JpaRepository<Employee, Long> {
 
     @Transactional
     void deleteByEmployeeId(Long employeeId);
+
+    Optional<Employee> findByEmployeeEmail(String email);
 }

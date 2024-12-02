@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 //import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public class DepartmentController {
     private DepartmentService departmentService;
 
     // Add department
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Department> addDepartment(@RequestBody Department department) throws DataAlreadyExistException {
         Department dep = departmentService.addDepartment(department);
@@ -28,7 +29,7 @@ public class DepartmentController {
     }
 
     // Update department
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{departmentId}")
     public ResponseEntity<Department> updateDepartment(@PathVariable("departmentId") Long departmentId, @RequestBody Department department) throws ResourceNotFoundException {
         Department dep = departmentService.updateDepartment(departmentId, department);
@@ -39,7 +40,7 @@ public class DepartmentController {
     }
 
     // Delete department
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{departmentId}")
     public ResponseEntity<String> deleteDepartment(@PathVariable("departmentId") Long departmentId) throws ResourceNotFoundException{
         String str = departmentService.deleteDepartment(departmentId);
@@ -47,7 +48,7 @@ public class DepartmentController {
     }
 
     // Get department by ID
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{departmentId}")
     public ResponseEntity<Department> getDepartmentById(@PathVariable("departmentId") Long departmentId) throws ResourceNotFoundException{
         Department department = departmentService.getDepartmentById(departmentId);
@@ -57,7 +58,7 @@ public class DepartmentController {
     }
 
     // Get department by name
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/departmentName")
     public ResponseEntity<Department> getDepartmentByName(@RequestParam("departmentName") String departmentName) throws ResourceNotFoundException{
         Department department = departmentService.getDepartmentByName(departmentName);
@@ -67,7 +68,7 @@ public class DepartmentController {
     }
 
     // Get all departments
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<List<Department>> getDepartments() throws ResourceNotFoundException{
         List<Department> departments = departmentService.getDepartments();

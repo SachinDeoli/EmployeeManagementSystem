@@ -7,7 +7,7 @@ import com.Airtribe.EmployeeTrackingSystem.service.EmployeeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-//import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,7 +20,7 @@ public class EmployeeController {
 
     // Add employee
     @PostMapping
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Employee> addEmployee(@RequestBody Employee employee) throws DataAlreadyExistException {
         Employee emp = employeeService.addEmployee(employee);
         return new ResponseEntity<>(emp, HttpStatus.CREATED);
@@ -28,7 +28,7 @@ public class EmployeeController {
 
     // Update employee
     @PutMapping("/{employeeId}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasRole('ADMIN') or (hasRole('MANAGER') and #id == principal.departmentId) or #id == principal.id")
     public ResponseEntity<Employee> updateEmployee(@PathVariable("employeeId") Long employeeId, @RequestBody Employee employee) throws ResourceNotFoundException {
         Employee emp = employeeService.updateEmployee(employeeId, employee);
         return new ResponseEntity<>(emp, HttpStatus.OK);
@@ -36,7 +36,7 @@ public class EmployeeController {
 
     // Delete employee
     @DeleteMapping("/{employeeId}")
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<String> deleteEmployee(@PathVariable("employeeId") Long employeeId) throws ResourceNotFoundException{
         String str = employeeService.deleteEmployee(employeeId);
         return new ResponseEntity<>(str, HttpStatus.NO_CONTENT);
@@ -45,7 +45,7 @@ public class EmployeeController {
     // Get employee by ID
     //Can only be accessed by the employee
     @GetMapping("/{employeeId}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','EMPLOYEE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER','EMPLOYEE')")
     public ResponseEntity<Employee> getEmployeeById(@PathVariable("employeeId") Long employeeId) throws ResourceNotFoundException{
         Employee employee = employeeService.getEmployeeById(employeeId);
         return employee != null ?
@@ -55,7 +55,7 @@ public class EmployeeController {
 
     // Get all employees
     @GetMapping
-    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('MANAGER')")
     public ResponseEntity<List<Employee>> getEmployees() throws ResourceNotFoundException{
         List<Employee> employees = employeeService.getEmployees();
         return new ResponseEntity<>(employees, HttpStatus.OK);
@@ -63,7 +63,7 @@ public class EmployeeController {
 
     // Get employee by department
     @GetMapping("/departmentId")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<Employee>> getEmployeeByDepartmentId(@RequestParam("departmentId") Long departmentId) throws ResourceNotFoundException{
         List<Employee> employees = employeeService.getEmployeeByDepartmentId(departmentId);
         return employees.isEmpty() ?
@@ -73,7 +73,7 @@ public class EmployeeController {
 
     // Get employee by project
     @GetMapping("/projectId")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<List<Employee>> getEmployeeByProjectId(@RequestParam("projectId") Long projectId) throws ResourceNotFoundException{
         List<Employee> employees = employeeService.getEmployeeByProjectId(projectId);
         return employees.isEmpty() ?
@@ -83,14 +83,14 @@ public class EmployeeController {
 
     // Get employees under a department with no projects
     @GetMapping("/employeesWithoutProject")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public List<Employee> getEmployeesWithoutProject(@RequestParam Long departmentId) throws ResourceNotFoundException{
         return employeeService.getEmployeesWithoutProject(departmentId);
     }
 
     // Get employee by name
     @GetMapping("/employeeName")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<Employee> getEmployeeByName(@RequestParam("employeeName") String employeeName) throws ResourceNotFoundException{
         Employee employee = employeeService.getEmployeeByName(employeeName);
         return employee != null ?
