@@ -98,7 +98,7 @@ public class ProjectsService implements IProjectService {
 
     @Override
     public List<Project> getProjectByDepartmentId(Long departmentId) throws ResourceNotFoundException {
-        List<Project> pro = projectsRepo.findByDepartmentId(departmentId);
+        List<Project> pro = projectsRepo.findByDepartment_DepartmentId(departmentId);
         if(pro == null || pro.size()<=0)
             throw new ResourceNotFoundException("No projects found in department with id "+ departmentId);
         return pro;

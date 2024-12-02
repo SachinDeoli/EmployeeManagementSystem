@@ -3,6 +3,7 @@ package com.Airtribe.EmployeeTrackingSystem.service;
 import com.Airtribe.EmployeeTrackingSystem.entity.Department;
 import com.Airtribe.EmployeeTrackingSystem.entity.Employee;
 import com.Airtribe.EmployeeTrackingSystem.entity.Project;
+import com.Airtribe.EmployeeTrackingSystem.exception.ResourceNotFoundException;
 import com.Airtribe.EmployeeTrackingSystem.repository.DepartmentRepo;
 import com.Airtribe.EmployeeTrackingSystem.repository.EmployeeRepo;
 import com.Airtribe.EmployeeTrackingSystem.repository.ProjectsRepo;
@@ -34,9 +35,9 @@ public class ManagementService implements IManagementService {
 
     // Assign a project to a department
     @Override
-    public void assignProjectToDepartment(Long projectId, Long departmentId) {
-        Optional<Project> project = projectRepository.findById(projectId);
-        Optional<Department> department = departmentRepository.findById(departmentId);
+    public void assignProjectToDepartment(Long projectId, Long departmentId) throws ResourceNotFoundException {
+        Optional<Project> project = projectRepository.findByProjectId(projectId);
+        Optional<Department> department = departmentRepository.findByDepartmentId(departmentId);
 
         if (project.isPresent() && department.isPresent()) {
             Project p = project.get();
@@ -46,13 +47,16 @@ public class ManagementService implements IManagementService {
             redisTemplate.opsForHash().delete(PROJECT_CACHE_KEY, projectId);
             redisTemplate.opsForHash().put(PROJECT_CACHE_KEY, projectId, p);
         }
+        else {
+            throw new ResourceNotFoundException("Wrong ProjectId or departmentID, Please recheck!");
+        }
     }
 
     // Assign an employee to a department
     @Override
-    public void assignEmployeeToDepartment(Long employeeId, Long departmentId) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        Optional<Department> department = departmentRepository.findById(departmentId);
+    public void assignEmployeeToDepartment(Long employeeId, Long departmentId) throws ResourceNotFoundException {
+        Optional<Employee> employee = employeeRepository.findByEmployeeId(employeeId);
+        Optional<Department> department = departmentRepository.findByDepartmentId(departmentId);
 
         if (employee.isPresent() && department.isPresent()) {
             Employee e = employee.get();
@@ -62,13 +66,17 @@ public class ManagementService implements IManagementService {
             redisTemplate.opsForHash().delete(EMPLOYEE_CACHE_KEY, employeeId);
             redisTemplate.opsForHash().put(EMPLOYEE_CACHE_KEY, employeeId, e);
         }
+        else
+        {
+            throw new ResourceNotFoundException("Wrong EmployeeID or DepartmentID, Please recheck!");
+        }
     }
 
     // Assign an employee to a project
     @Override
-    public void assignEmployeeToProject(Long employeeId, Long projectId) {
-        Optional<Employee> employee = employeeRepository.findById(employeeId);
-        Optional<Project> project = projectRepository.findById(projectId);
+    public void assignEmployeeToProject(Long employeeId, Long projectId) throws ResourceNotFoundException {
+        Optional<Employee> employee = employeeRepository.findByEmployeeId(employeeId);
+        Optional<Project> project = projectRepository.findByProjectId(projectId);
 
         if (employee.isPresent() && project.isPresent()) {
             Employee e = employee.get();
@@ -78,12 +86,19 @@ public class ManagementService implements IManagementService {
             redisTemplate.opsForHash().delete(EMPLOYEE_CACHE_KEY, employeeId);
             redisTemplate.opsForHash().put(EMPLOYEE_CACHE_KEY, employeeId, e);
         }
+        else {
+            throw new ResourceNotFoundException("Wrong EmployeeID or ProjectID, Please recheck!");
+        }
     }
 
     // Get total budget allocated to projects within a department
     @Override
-    public Double getTotalBudgetForDepartment(Long departmentId) {
-        List<Project> projects = projectRepository.findByDepartmentId(departmentId);
+    public Double getTotalBudgetForDepartment(Long departmentId) throws ResourceNotFoundException {
+        List<Project> projects = projectRepository.findByDepartment_DepartmentId(departmentId);
+        if(projects==null || projects.size()<=0)
+        {
+            throw new ResourceNotFoundException("No Projects found");
+        }
         return projects.stream().mapToDouble(Project::getBudget).sum();
     }
 }

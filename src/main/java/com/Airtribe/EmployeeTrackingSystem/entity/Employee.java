@@ -1,5 +1,6 @@
 package com.Airtribe.EmployeeTrackingSystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -18,14 +19,16 @@ public class Employee {
     private String employeeEmail;
 
     @ManyToOne
-    @JoinColumn(name = "department_id")  // Foreign key to Department
+    @JoinColumn(name = "department_id", referencedColumnName = "departmentId")  // Foreign key to Department
+    @JsonIgnore
     private Department department;
 
     @ManyToMany
     @JoinTable(
             name = "employee_project",
-            joinColumns = @JoinColumn(name = "employee_id"),
+            joinColumns = @JoinColumn(name = "employee_id", referencedColumnName = "employeeId"), // Foreign key to Employee
             inverseJoinColumns = @JoinColumn(name = "project_id")) // Foreign key to Project
+    @JsonIgnore
     private List<Project> project = new ArrayList<>();
 
     public String getEmployeeName() {

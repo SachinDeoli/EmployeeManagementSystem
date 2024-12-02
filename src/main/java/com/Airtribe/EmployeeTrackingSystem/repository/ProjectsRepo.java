@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ProjectsRepo extends JpaRepository<Project, Long> {
-    List<Project> findByDepartmentId(Long departmentId);
+    List<Project> findByDepartment_DepartmentId(Long departmentId);
 
     Project findByEmployeeId(Long employeeId);
 
