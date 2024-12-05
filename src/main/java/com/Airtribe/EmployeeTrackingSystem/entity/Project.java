@@ -1,5 +1,6 @@
 package com.Airtribe.EmployeeTrackingSystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -8,41 +9,42 @@ import java.util.List;
 @Entity
 public class Project {
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @GeneratedValue(strategy = GenerationType.AUTO)
         private Long id;
+
+        @Column(unique = true)
+        private Long projectId;
         private String projectName;
         private double budget;
-
-//        @OneToMany(mappedBy = "project")
-//        private List<Employee> employee;
 
     @ManyToMany
     @JoinTable(
             name = "employee_project",
-            joinColumns = @JoinColumn(name = "project_id"),
+            joinColumns = @JoinColumn(name = "project_id", referencedColumnName = "projectId"),
             inverseJoinColumns = @JoinColumn(name = "employee_id"))
     private List<Employee> employee = new ArrayList<>();
 
         @ManyToOne
-        @JoinColumn(name = "department_id")  // Foreign key to Department
+        @JoinColumn(name = "department_id", referencedColumnName = "departmentId")  // Foreign key to Department
+        @JsonIgnore
         private Department department;
 
         public Project() {
         }
 
-        public Project(Long id, String projectName, double budget, Department department) {
-            this.id = id;
+        public Project(Long projectId, String projectName, double budget, Department department) {
+            this.projectId = projectId;
             this.projectName = projectName;
             this.budget = budget;
             this.department = department;
         }
 
         public Long getProjectId() {
-            return id;
+            return projectId;
         }
 
-        public void setProjectId(Long id) {
-            this.id = id;
+        public void setProjectId(Long projectId) {
+            this.projectId = projectId;
         }
 
         public String getProjectName() {

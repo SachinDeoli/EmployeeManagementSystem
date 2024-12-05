@@ -8,8 +8,11 @@ import java.util.List;
 public class Department {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
+    @Column(unique = true)
+    private Long departmentId;
     private String departmentName;
     private String departmentDescription;
 
@@ -22,18 +25,19 @@ public class Department {
     public Department() {
     }
 
-    public Department(Long id, String departmentName, String departmentDescription) {
+    public Department(Long id, Long departmentId, String departmentName, String departmentDescription) {
         this.id = id;
+        this.departmentId = departmentId;
         this.departmentName = departmentName;
         this.departmentDescription = departmentDescription;
     }
 
     public Long getDepartmentId() {
-        return id;
+        return departmentId;
     }
 
-    public void setDepartmentId(Long id) {
-        this.id = id;
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
     }
 
     public String getDepartmentName() {

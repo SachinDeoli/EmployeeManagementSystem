@@ -51,13 +51,18 @@ This project is a **Java-based web application** built with **Spring Boot** that
 src  
 ├── main  
 │   ├── java  
-│   │   ├── com.example.ems  
-│   │   │   ├── controller      # REST controllers for API endpoints  
-│   │   │   ├── service         # Business logic and caching  
-│   │   │   ├── repository      # Database interactions (JPA repositories)  
-│   │   │   ├── model           # Entity classes for Employees, Departments, Projects  
-│   │   │   ├── config          # Security, OAuth2, and caching configurations  
+│   │   ├── com.Airtribe.EmployeeManagementSystem
+│   │   │   ├── advice
+│   │   │   ├── cofig
+│   │   │   ├── controller        
+│   │   │   ├── entity         
+│   │   │   ├── exception      
+│   │   │   ├── repository           
+│   │   │   ├── service
+│   │   │   ├── serviceInterface
+│   │   │   ├── EmployeeManagementSystemApplication.java          
 │   ├── resources  
 │       ├── application.prop     # Configuration file for database, security, etc.  
+
 
 

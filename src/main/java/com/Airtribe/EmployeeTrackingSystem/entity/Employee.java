@@ -1,28 +1,38 @@
 package com.Airtribe.EmployeeTrackingSystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 @Entity
 public class Employee {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private long id;
+
+    @Column(unique = true)
+    private Long employeeId;
     private String employeeName;
     private String employeeEmail;
 
+    @Enumerated(EnumType.STRING)
+    private Role role; // e.g., ADMIN, MANAGER, EMPLOYEE
+
     @ManyToOne
-    @JoinColumn(name = "department_id")  // Foreign key to Department
+    @JoinColumn(name = "department_id", referencedColumnName = "departmentId")  // Foreign key to Department
+    @JsonIgnore
     private Department department;
 
     @ManyToMany
     @JoinTable(
             name = "employee_project",
-            joinColumns = @JoinColumn(name = "employee_id"),
+            joinColumns = @JoinColumn(name = "employee_id", referencedColumnName = "employeeId"), // Foreign key to Employee
             inverseJoinColumns = @JoinColumn(name = "project_id")) // Foreign key to Project
+    @JsonIgnore
     private List<Project> project = new ArrayList<>();
 
     public String getEmployeeName() {
@@ -34,11 +44,11 @@ public class Employee {
     }
 
     public long getEmployeeId() {
-        return id;
+        return employeeId;
     }
 
-    public void setEmployeeId(long id) {
-        this.id = id;
+    public void setEmployeeId(long employeeId) {
+        this.employeeId = employeeId;
     }
 
     public String getEmployeeEmail() {
@@ -65,13 +75,25 @@ public class Employee {
         this.project = project;
     }
 
+    public Role getRole() {
+        return role;
+    }
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public Collection<String> getRoles() {
+        return role != null ? List.of(role.name()) : List.of();
+    }
+
     public Employee() {
     }
 
-    public Employee(long id, String employeeName, String employeeEmail,Department department) {
-        this.id = id;
+    public Employee(long employeeId, String employeeName, String employeeEmail,Department department, Role role) {
+        this.employeeId = employeeId;
         this.employeeName = employeeName;
         this.employeeEmail = employeeEmail;
         this.department= department;
+        this.role = role;
     }
 }
